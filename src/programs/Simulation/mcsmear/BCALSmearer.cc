@@ -5,6 +5,7 @@
 // Major revision March 6, 2012 David Lawrence
 
 #include "BCALSmearer.h"
+#include "DANA/DEvent.h"
 
 #include "DRandom2.h"
 
@@ -817,7 +818,7 @@ void BCALSmearer::CopyBCALHitsToHDDM(map<int, fADCHitList> &fADCHits,
 //-----------
 // bcal_config_t  (constructor)
 //-----------
-bcal_config_t::bcal_config_t(JEventLoop *loop) 
+bcal_config_t::bcal_config_t(const std::shared_ptr<const JEvent>& event) 
 {
  	BCAL_SAMPLINGCOEFA        = 0.0; // 0.042 (from calibDB BCAL/bcal_parms)
  	BCAL_SAMPLINGCOEFB        = 0.0; // 0.013 (from calibDB BCAL/bcal_parms)
@@ -858,7 +859,7 @@ bcal_config_t::bcal_config_t(JEventLoop *loop)
 	// Load parameters from CCDB
     cout << "get BCAL/bcal_smear_parms_v2 parameters from CCDB..." << endl;
     map<string, double> bcalparms;
-    if(loop->GetCalib("BCAL/bcal_smear_parms_v2", bcalparms)) {
+    if(DEvent::GetCalib(event, "BCAL/bcal_smear_parms_v2", bcalparms)) {
      	jerr << "Problem loading BCAL/bcal_smear_parms_v2 from CCDB!" << endl;
      } else {
      	BCAL_SAMPLINGCOEFA 		  = bcalparms["BCAL_SAMPLINGCOEFA"];
@@ -880,7 +881,7 @@ bcal_config_t::bcal_config_t(JEventLoop *loop)
 	
     //cout << "Get BCAL/attenuation_parameters from CCDB..." <<endl;
     //vector< vector<double> > in_atten_parameters;
-    //if(loop->GetCalib("BCAL/attenuation_parameters", in_atten_parameters)) {
+    //if(DEvent::GetCalib(event, "BCAL/attenuation_parameters", in_atten_parameters)) {
     // 	jerr << "Problem loading BCAL/bcal_parms from CCDB!" << endl;
 	//} else {
     // 	attenuation_parameters.clear();
@@ -892,7 +893,7 @@ bcal_config_t::bcal_config_t(JEventLoop *loop)
 		
      cout << "Get BCAL/digi_scales parameters from CCDB..." << endl;
      map<string, double> bcaldigiscales;
-     if(loop->GetCalib("BCAL/digi_scales", bcaldigiscales)) {
+     if(DEvent::GetCalib(event, "BCAL/digi_scales", bcaldigiscales)) {
      	jerr << "Problem loading BCAL/digi_scales from CCDB!" << endl;
      } else {
      	BCAL_NS_PER_ADC_COUNT = bcaldigiscales["BCAL_ADC_TSCALE"];
@@ -901,7 +902,7 @@ bcal_config_t::bcal_config_t(JEventLoop *loop)
 
     cout << "Get BCAL/base_time_offset parameters from CCDB..." << endl;
     map<string, double> bcaltimeoffsets;
-    if(loop->GetCalib("BCAL/base_time_offset", bcaltimeoffsets)) {
+    if(DEvent::GetCalib(event, "BCAL/base_time_offset", bcaltimeoffsets)) {
      	jerr << "Problem loading BCAL/base_time_offset from CCDB!" << endl;
  	} else {
      	BCAL_BASE_TIME_OFFSET = bcaltimeoffsets["BCAL_BASE_TIME_OFFSET"];
@@ -911,7 +912,7 @@ bcal_config_t::bcal_config_t(JEventLoop *loop)
    	// load per-channel efficiencies
     cout << "Get BCAL/channel_mc_efficiency tables from CCDB..." << endl;
 	vector<double> raw_table;
-	if(loop->GetCalib("BCAL/channel_mc_efficiency", raw_table)) {
+	if(DEvent::GetCalib(event, "BCAL/channel_mc_efficiency", raw_table)) {
     	jerr << "Problem loading BCAL/channel_mc_efficiency from CCDB!" << endl;
     } else {
    	    int channel = 0;
@@ -930,7 +931,7 @@ bcal_config_t::bcal_config_t(JEventLoop *loop)
 
     cout << "Get BCAL/ADC_saturation parameters from CCDB..." << endl;
     std::vector<std::map<string,double> > saturation_ADC_pars;
-    if(loop->GetCalib("/BCAL/ADC_saturation", saturation_ADC_pars))
+    if(DEvent::GetCalib(event, "/BCAL/ADC_saturation", saturation_ADC_pars))
 	    jout << "Error loading /BCAL/ADC_saturation !" << endl;
     for (unsigned int i=0; i < saturation_ADC_pars.size(); i++) {
 	    int end = (saturation_ADC_pars[i])["end"];
@@ -944,7 +945,7 @@ bcal_config_t::bcal_config_t(JEventLoop *loop)
 
     cout << "Get BCAL/SiPM_saturation parameters from CCDB..." << endl;
    std::vector<std::map<string,double> > saturation_SiPM_pars;
-   if(loop->GetCalib("/BCAL/SiPM_saturation", saturation_SiPM_pars))
+   if(DEvent::GetCalib(event, "/BCAL/SiPM_saturation", saturation_SiPM_pars))
       jout << "Error loading /SiPM/SiPM_saturation !" << endl;
    for (unsigned int i=0; i < saturation_SiPM_pars.size(); i++) {
 	   int end = (saturation_SiPM_pars[i])["END"];
